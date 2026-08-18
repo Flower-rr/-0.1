@@ -596,15 +596,7 @@ function submitData(primary, secondary, normalized) {
 
   var jsonData = JSON.stringify(payload);
 
-  /* Method 1: XHR POST */
-  try {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', FORM_URL, true);
-    xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
-    xhr.send(jsonData);
-  } catch(e) {}
-
-  /* Method 2: iframe form POST (most reliable in WeChat) */
+  /* iframe form POST */
   try {
     var form = document.createElement('form');
     form.method = 'POST';
