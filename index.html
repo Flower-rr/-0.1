@@ -522,8 +522,10 @@ function renderResult(primary, secondary, normalized) {
   document.getElementById('result-content').innerHTML = html;
   transitionTo('result');
 
-  /* Submit data silently */
-  submitData(primary, secondary, normalized);
+  /* Store result data for feedback submission */
+  lastResult.primary = primary;
+  lastResult.secondary = secondary;
+  lastResult.normalized = normalized;
 }
 
 /* ============================================================
@@ -592,13 +594,31 @@ function submitData(primary, secondary, normalized) {
     payload['\u53CD\u9988' + (f + 1)] = fbRatings[f] || 0;
   }
 
+  var jsonData = JSON.stringify(payload);
+
+  /* Method 1: XHR POST */
   try {
-    fetch(FORM_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', FORM_URL, true);
+    xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+    xhr.send(jsonData);
+  } catch(e) {}
+
+  /* Method 2: iframe form POST (most reliable in WeChat) */
+  try {
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = FORM_URL;
+    form.target = 'submit-frame';
+    form.style.display = 'none';
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'data';
+    input.value = jsonData;
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(function() { document.body.removeChild(form); }, 3000);
   } catch(e) {}
 }
 
@@ -606,6 +626,7 @@ function submitData(primary, secondary, normalized) {
    FEEDBACK
    ============================================================ */
 var fbRatings = [0, 0, 0, 0, 0];
+var lastResult = { primary: '', secondary: '', normalized: {} };
 
 function pickStar(qi, val) {
   fbRatings[qi] = val;
@@ -633,16 +654,8 @@ function submitFeedback() {
   if (thanks) { thanks.style.display = 'block'; }
   showToast('\u611F\u8C22\u60A8\u7684\u53CD\u9988\uFF01');
 
-  /* Optionally send feedback data */
-  var FORM_URL = '';
-  if (!FORM_URL) return;
-  try {
-    var data = new FormData();
-    for (var j = 0; j < fbRatings.length; j++) {
-      data.append('fb_' + (j + 1), fbRatings[j]);
-    }
-    fetch(FORM_URL, { method: 'POST', body: data, mode: 'no-cors' });
-  } catch(e) {}
+  /* Send all data including feedback */
+  submitData(lastResult.primary, lastResult.secondary, lastResult.normalized);
 }
 
 /* ============================================================
@@ -656,5 +669,6 @@ function submitFeedback() {
   img2.src = questions[0].B.img;
 })();
 </script>
+  <iframe name="submit-frame" style="display:none"></iframe>
 </body>
 </html>
