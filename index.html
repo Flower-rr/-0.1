@@ -596,7 +596,24 @@ function submitData(primary, secondary, normalized) {
 
   var jsonData = JSON.stringify(payload);
 
-  /* Image beacon GET - most reliable in WeChat */
+  /* Method 1: Form POST (works in WeChat) */
+  try {
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = FORM_URL;
+    form.target = 'submit-frame';
+    form.style.display = 'none';
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'data';
+    input.value = jsonData;
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(function() { if (form.parentNode) document.body.removeChild(form); }, 3000);
+  } catch(e) {}
+
+  /* Method 2: Image beacon fallback */
   try {
     var img = new Image();
     img.src = FORM_URL + '?data=' + encodeURIComponent(jsonData);
