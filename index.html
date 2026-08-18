@@ -430,21 +430,12 @@ function calculateAndShowResult() {
    ============================================================ */
 function renderResult(primary, secondary, normalized) {
   var p = personalities[primary + '\u578b'];
-  var dims = Object.keys(maxScores);
-  var barColors = {
-    '\u63a2\u7d22': '#C47D5A',
-    '\u5b89\u987f': '#8B7355',
-    '\u5171\u9e23': '#C4955A',
-    '\u6c89\u601d': '#6B8F71',
-    '\u91ce\u8da3': '#7A8B5A'
-  };
 
   var html = '<div class="result-wrap">';
 
   /* Badge + Title */
   html += '<div class="result-badge">\u4F60\u7684\u81EA\u7136\u4EBA\u683C</div>';
   html += '<div class="result-type" style="color:' + p.color + '">' + primary.replace('\u578b', '') + '</div>';
-  html += '<div class="result-pct">\u503E\u5411\u5EA6 ' + normalized[primary] + '%</div>';
 
   /* Description */
   html += '<div class="result-desc">' + p.desc + '</div>';
@@ -455,19 +446,6 @@ function renderResult(primary, secondary, normalized) {
     html += '<span>' + p.keywords[k] + '</span>';
   }
   html += '</div>';
-
-  /* Score bars */
-  html += '<div class="scores-title">\u4E94\u7EF4\u503E\u5411\u5206\u5E03</div>';
-  for (var i = 0; i < dims.length; i++) {
-    var dim = dims[i];
-    var pct = normalized[dim];
-    var isPrimary = (dim === primary);
-    html += '<div class="score-row">';
-    html += '<div class="score-label" style="' + (isPrimary ? 'font-weight:700;color:#3D2E1F' : '') + '">' + dim + '</div>';
-    html += '<div class="score-bar-bg"><div class="score-bar-fill" style="width:0%;background:' + barColors[dim] + '" data-width="' + pct + '%"></div></div>';
-    html += '<div class="score-val">' + pct + '%</div>';
-    html += '</div>';
-  }
 
   /* Recommendations */
   html += '<div class="rec-section">';
@@ -481,12 +459,6 @@ function renderResult(primary, secondary, normalized) {
     }
     html += '</div>';
   }
-  html += '</div>';
-
-  /* Sub tendency */
-  html += '<div class="sub-section">';
-  html += '<div class="sub-label">\u6B21\u503E\u5411</div>';
-  html += '<div class="sub-type">' + secondary + '\uFF08' + normalized[secondary] + '%\uFF09</div>';
   html += '</div>';
 
   /* Actions */
@@ -522,14 +494,6 @@ function renderResult(primary, secondary, normalized) {
 
   document.getElementById('result-content').innerHTML = html;
   transitionTo('result');
-
-  /* Animate score bars */
-  setTimeout(function() {
-    var fills = document.querySelectorAll('.score-bar-fill');
-    for (var f = 0; f < fills.length; f++) {
-      fills[f].style.width = fills[f].getAttribute('data-width');
-    }
-  }, 400);
 
   /* Submit data silently */
   submitData(primary, secondary, normalized);
@@ -582,23 +546,32 @@ function showToast(msg) {
    DATA COLLECTION (configure your endpoint below)
    ============================================================ */
 function submitData(primary, secondary, normalized) {
-  var FORM_URL = 'https://formsubmit.co/2363819880@qq.com';
+  var FORM_URL = 'https://script.google.com/macros/s/AKfycbwQCzpMB8FmJ8rU35FPDrYeOJm2FvewVZaRcBXvraVJsg3flbpmRqLx7aI-tAU-5Ckf/exec';
 
-  var data = new FormData();
-  data.append('_subject', '\u65B0\u7684\u6D4B\u8BD5\u7ED3\u679C\uFF1A' + primary);
-  data.append('_captcha', 'false');
-  data.append('_template', 'table');
-  data.append('\u4EBA\u683C\u7C7B\u578B', primary);
-  data.append('\u6B21\u503E\u5411', secondary + '\uFF08' + normalized[secondary] + '%\uFF09');
-  data.append('\u63A2\u7D22', normalized['\u63A2\u7D22'] + '%');
-  data.append('\u5B89\u987F', normalized['\u5B89\u987F'] + '%');
-  data.append('\u5171\u9E23', normalized['\u5171\u9E23'] + '%');
-  data.append('\u6C89\u601D', normalized['\u6C89\u601D'] + '%');
-  data.append('\u91CE\u8DA3', normalized['\u91CE\u8DA3'] + '%');
-  data.append('\u6D4B\u8BD5\u65F6\u95F4', new Date().toLocaleString('zh-CN'));
+  var payload = {
+    '\u4EBA\u683C\u7C7B\u578B': primary,
+    '\u6B21\u503E\u5411': secondary + '\uFF08' + normalized[secondary] + '%\uFF09',
+    '\u63A2\u7D22': normalized['\u63A2\u7D22'] + '%',
+    '\u5B89\u987F': normalized['\u5B89\u987F'] + '%',
+    '\u5171\u9E23': normalized['\u5171\u9E23'] + '%',
+    '\u6C89\u601D': normalized['\u6C89\u601D'] + '%',
+    '\u91CE\u8DA3': normalized['\u91CE\u8DA3'] + '%',
+    '\u6D4B\u8BD5\u65F6\u95F4': new Date().toLocaleString('zh-CN')
+  };
+  for (var q = 0; q < answers.length; q++) {
+    payload['Q' + (q + 1)] = answers[q];
+  }
+  for (var f = 0; f < fbRatings.length; f++) {
+    payload['\u53CD\u9988' + (f + 1)] = fbRatings[f] || 0;
+  }
 
   try {
-    fetch(FORM_URL, { method: 'POST', body: data, mode: 'no-cors' });
+    fetch(FORM_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
   } catch(e) {}
 }
 
