@@ -582,21 +582,20 @@ function showToast(msg) {
    DATA COLLECTION (configure your endpoint below)
    ============================================================ */
 function submitData(primary, secondary, normalized) {
-  /* 
-   * To enable data collection:
-   * 1. Create a form at https://docs.qq.com (Tencent Docs) or similar
-   * 2. Replace FORM_URL below with your form submission endpoint
-   * 3. Map field_N to your form fields
-   */
-  var FORM_URL = ''; // <-- Paste your form endpoint here
-  if (!FORM_URL) return;
+  var FORM_URL = 'https://formsubmit.co/2363819880@qq.com';
 
   var data = new FormData();
-  data.append('field_1', primary);
-  data.append('field_2', secondary);
-  data.append('field_3', JSON.stringify(normalized));
-  data.append('field_4', answers.join(','));
-  data.append('field_5', new Date().toISOString());
+  data.append('_subject', '\u65B0\u7684\u6D4B\u8BD5\u7ED3\u679C\uFF1A' + primary);
+  data.append('_captcha', 'false');
+  data.append('_template', 'table');
+  data.append('\u4EBA\u683C\u7C7B\u578B', primary);
+  data.append('\u6B21\u503E\u5411', secondary + '\uFF08' + normalized[secondary] + '%\uFF09');
+  data.append('\u63A2\u7D22', normalized['\u63A2\u7D22'] + '%');
+  data.append('\u5B89\u987F', normalized['\u5B89\u987F'] + '%');
+  data.append('\u5171\u9E23', normalized['\u5171\u9E23'] + '%');
+  data.append('\u6C89\u601D', normalized['\u6C89\u601D'] + '%');
+  data.append('\u91CE\u8DA3', normalized['\u91CE\u8DA3'] + '%');
+  data.append('\u6D4B\u8BD5\u65F6\u95F4', new Date().toLocaleString('zh-CN'));
 
   try {
     fetch(FORM_URL, { method: 'POST', body: data, mode: 'no-cors' });
