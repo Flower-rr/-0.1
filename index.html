@@ -355,6 +355,15 @@ function renderQuestion(idx) {
   html += '</div>';
   html += '</div>';
 
+  /* Navigation buttons */
+  html += '<div style="display:flex;justify-content:space-between;padding:0 4px;margin-top:8px">';
+  if (idx > 0) {
+    html += '<div onclick="prevQuestion()" style="padding:10px 24px;border-radius:20px;background:rgba(255,255,255,0.85);color:#555;font-size:15px;cursor:pointer;text-align:center">\u4E0A\u4E00\u9898</div>';
+  } else {
+    html += '<div></div>';
+  }
+  html += '</div>';
+
   html += '</div>';
 
   document.getElementById('quiz-area').innerHTML = html;
@@ -371,7 +380,7 @@ function selectOption(choice) {
   /* Visual feedback */
   document.getElementById('card-' + choice).classList.add('selected');
 
-  answers.push(choice);
+  answers[currentQ] = choice;
 
   /* Advance after brief delay */
   setTimeout(function() {
@@ -379,9 +388,27 @@ function selectOption(choice) {
     if (currentQ < questions.length) {
       renderQuestion(currentQ);
     } else {
-      calculateAndShowResult();
+      /* Last question: show "查看结果" button */
+      showViewResultButton();
     }
   }, 500);
+}
+
+function prevQuestion() {
+  if (currentQ > 0) {
+    currentQ--;
+    answers.length = currentQ;
+    renderQuestion(currentQ);
+  }
+}
+
+function showViewResultButton() {
+  var html = '<div style="padding:60px 20px;text-align:center;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center">';
+  html += '<div style="font-size:18px;color:#555;margin-bottom:32px">\u7B54\u9898\u5B8C\u6210\uFF0C\u51C6\u5907\u597D\u67E5\u770B\u7ED3\u679C\u4E86\u5417\uFF1F</div>';
+  html += '<div onclick="calculateAndShowResult()" style="padding:14px 48px;border-radius:28px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:17px;cursor:pointer;text-align:center;box-shadow:0 4px 15px rgba(102,126,234,0.4)">\u67E5\u770B\u7ED3\u679C</div>';
+  html += '<div onclick="prevQuestion()" style="margin-top:20px;padding:10px 24px;color:#888;font-size:14px;cursor:pointer">\u8FD4\u56DE\u68C0\u67E5</div>';
+  html += '</div>';
+  document.getElementById('quiz-area').innerHTML = html;
 }
 
 function showLoading() {
